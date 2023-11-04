@@ -5,10 +5,10 @@ using UnityEngine;
 public class TowerAttackRange : MonoBehaviour
 {
     // Start is called before the first frame update
-    void Awake()
-    {
-        OffAttackRange();
-    }
+    //void Awake()
+    //{
+    //    OffAttackRange();
+    //}처음 오브젝트 비활성화로 Awake가 호출되지 않고 다시 활성화될 때 호출되어 Range가 보이지 않을 수 있음.
 
     public void OnAttackRange(Vector3 position, float range)
     {

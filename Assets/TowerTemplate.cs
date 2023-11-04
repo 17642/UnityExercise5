@@ -5,6 +5,7 @@ using UnityEngine;
 public class TowerTemplate : ScriptableObject//데이터 관리
 {
     public GameObject towerPrefab;//타워 프리팹 지정
+    public GameObject followTowerPrefab;//임시 타워 프리팹 지정
     public Weapon[] weapon;//타워 종류(레벨)
 
     [System.Serializable]//직렬화해서 인스펙터에서 수정할 수 있게
