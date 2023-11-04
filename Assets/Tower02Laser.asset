@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 291f04f7677dbc448a9d090e46ff1d62, type: 3}
+  m_Name: Tower02Laser
+  m_EditorClassIdentifier: 
+  towerPrefab: {fileID: 8914680381352760989, guid: 5530970e28bdcfe4a9b3e22bc83244dd, type: 3}
+  followTowerPrefab: {fileID: 774135712442846318, guid: 438f7a2648efb9b4fa4a666b8ad30809, type: 3}
+  weapon:
+  - sprite: {fileID: 21300000, guid: cbd76ad5d5f3165448d43d57155a1976, type: 3}
+    damage: 1.5
+    rate: 0
+    range: 3
+    cost: 200
+    sell: 100
+  - sprite: {fileID: 21300000, guid: f1e562603d3f12d4a8819e11b55ce021, type: 3}
+    damage: 3
+    rate: 0
+    range: 3
+    cost: 350
+    sell: 150
+  - sprite: {fileID: 21300000, guid: 82968e6ab9b1eb54882a1f45283a2ba3, type: 3}
+    damage: 5
+    rate: 0
+    range: 5
+    cost: 400
+    sell: 200

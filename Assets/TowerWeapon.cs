@@ -4,15 +4,31 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.XR;
 
-public enum WeaponState { SearchTarget = 0, AttackToTarget }
+
+public enum WeaponType { Cannon=0, Laser}
+public enum WeaponState { SearchTarget = 0, TryAttackCannon, TryAttackLaser } //AttackToTarget }//공격 상태 대신
 
 public class TowerWeapon : MonoBehaviour {
+    [Header("Commons")]//인스펙터 창에 표시되는 변수들을 용도별로 구분. -> 문자열 내용을 굵게 표시
+    [SerializeField]
+    private WeaponType weaponType;//무기 속성 설정
     [SerializeField]
     private TowerTemplate towerTemplate;//타워 정보(공격력, 공격속도 등)
     [SerializeField]
-    private GameObject projectilePrefab;//발사체 프리팹
-    [SerializeField]
     private Transform spawnPoint;// 발사체 스폰 위치
+
+    [Header("Cannon")]
+    [SerializeField]
+    private GameObject projectilePrefab;//발사체 프리팹
+
+    [Header("Laser")]
+    [SerializeField]
+    private LineRenderer lineRenderer;//레이저 선(Line)
+    [SerializeField]
+    private Transform hitEffect;//타격 효과
+    [SerializeField]
+    private LayerMask targetLayer;//광선에 부딪히는 레이어 설정
+    
     //[SerializeField]
     //private float attackRate = 0.5f;//공격 속도
     //[SerializeField]
@@ -83,7 +99,10 @@ public class TowerWeapon : MonoBehaviour {
     private IEnumerator SearchTarget()
     {
         while (true)
-        {//제일 가까운 적 탐색 - 해당 적 사거리내에 있는지 확인 - 현재까지 검사한 적보다 가까운지 확인
+        {
+            //기존 공격 코드 대체
+            /*
+            //제일 가까운 적 탐색 - 해당 적 사거리내에 있는지 확인 - 현재까지 검사한 적보다 가까운지 확인
             float closestDistSpr = Mathf.Infinity;//최초 거리를 가장 크게 설정
 
             for(int i = 0;i<enemySpawner.EnemyList.Count;i++)
@@ -97,15 +116,30 @@ public class TowerWeapon : MonoBehaviour {
             }
             if(attackTarget != null)//공격 타겟이 존재하면
             {
-                ChangeState(WeaponState.AttackToTarget);//공격중으로 상태 변경
+                ChangeState(WeaponState.TryAttackCannon);//공격중으로 상태 변경
+            }
+            */
+            attackTarget = FineClosestAttackTarget();
+            if (attackTarget != null)
+            {
+                if (weaponType == WeaponType.Cannon)//무기 속성에 따라 공격 방식 변경
+                {
+                    ChangeState(WeaponState.TryAttackCannon);
+                }
+                else if (weaponType == WeaponType.Laser)
+                {
+                    ChangeState(WeaponState.TryAttackLaser);
+                }
             }
             yield return null;
         }
     }
-    private IEnumerator AttackToTarget()
+    //private IEnumerator AttackToTarget()//대체됨.
+    private IEnumerator TryAttackCannon()
     {
         while(true)
         {
+            /*
             if (attackTarget == null)//공격할 타겟이 없으면
             {
                 ChangeState(WeaponState.SearchTarget);//SearchTarget로 상태 변경
@@ -121,7 +155,65 @@ public class TowerWeapon : MonoBehaviour {
             yield return new WaitForSeconds(towerTemplate.weapon[level].rate);//공격속도만큼 대기 후
 
             SpawnProjectile();//공격
+            */
+
+            //Target 공격 가능한지 검사
+            if (IsPossibleToAttackTarget() == false)
+            {
+                ChangeState(WeaponState.SearchTarget);//타겟을 공격할 수 없을 경우 다시 타겟 탐색
+                break;
+            }
+            yield return new WaitForSeconds(towerTemplate.weapon[level].rate);//공격 속도만큼 대기
         }
+    }
+    private IEnumerator TryAttackLaser() 
+    {
+        EnableLaser();//레이저 효과 활성화
+
+        while(true)
+        {
+            if (IsPossibleToAttackTarget() == false)//Target를 공격할 수 없으면
+            {
+                DisableLaser();//레이저 끄기
+                ChangeState(WeaponState.SearchTarget);
+                break;
+            }
+
+            SpawnLaser();//레이저 공격
+
+            yield return null;
+        }
+    }
+
+    private Transform FineClosestAttackTarget()
+    {
+        float closestDistSpr = Mathf.Infinity;//최초 거리를 가장 크게 설정
+
+        for(int i = 0; i < enemySpawner.EnemyList.Count; i++)//EnemyList 안에 있는 적 검사
+        {
+            float distance = Vector3.Distance(enemySpawner.EnemyList[i].transform.position, transform.position);
+            if (distance <= towerTemplate.weapon[level].range && distance <= closestDistSpr)//사거리 내에 있고, 지금까지 감시한 적보다 거리가 더 가까울 경우
+            {
+                closestDistSpr = distance;//가장 가까운 거리 업데이트
+                attackTarget = enemySpawner.EnemyList[i].transform;//공격 대상 지정
+            }
+        }
+        return attackTarget;
+    }
+
+    private bool IsPossibleToAttackTarget()
+    {
+        if(attackTarget == null)//타겟이 존재하지 않을 경우
+        {
+            return false;
+        }
+        float distance = Vector3.Distance(attackTarget.position, transform.position);//타겟과 나의 거리가
+        if (distance > towerTemplate.weapon[level].range)//타워의 사거리보다 멀 때
+        {
+            attackTarget = null; // 타겟 초기화
+            return false;
+        }
+        return true;//문제 없으면 공격 가능
     }
     private void SpawnProjectile()
     {
@@ -139,6 +231,12 @@ public class TowerWeapon : MonoBehaviour {
         level++;
         spriteRenderer.sprite = towerTemplate.weapon[level].sprite;//스프라이트 변경
         playerGold.CurrentGold -= towerTemplate.weapon[level].cost;//돈 차감
+
+        if (weaponType == WeaponType.Laser)//무기 속성이 레이저일 경우
+        {
+            lineRenderer.startWidth = 0.05f + level * 0.05f;//레벨에 따라 레이저 굵기 결정
+            lineRenderer.endWidth = 0.05f;
+        }
         return true;//타워 업그레이드 성공
     }
 
@@ -147,6 +245,36 @@ public class TowerWeapon : MonoBehaviour {
         playerGold.CurrentGold += towerTemplate.weapon[level].sell;//골드 증가
         ownerTile.IsbuildTower = false;//타워 건설 다시 가능하게 설정
         Destroy(gameObject);//타워 오브젝트 파괴
+    }
+
+    private void EnableLaser()
+    {
+        lineRenderer.gameObject.SetActive(true);
+        hitEffect.gameObject.SetActive(true);//레이저와 피격 효과 활성화
+    }
+
+    private void DisableLaser() 
+    {
+        lineRenderer.gameObject.SetActive(false);
+        hitEffect.gameObject.SetActive(false);//레이저와 피격 효과 비활성화
+    }
+
+    private void SpawnLaser()
+    {
+        Vector3 direction = attackTarget.position - spawnPoint.position;//공격 방향
+        //같은 방향으로 광선 여러개를 쏴서 attackTarget와 동일한 오브젝트를 검출(다른 적이 타겟과 포탑 사이에 있을 때 타겟을 공격하기 위함.)
+        RaycastHit2D[] hit = Physics2D.RaycastAll(spawnPoint.position, direction, towerTemplate.weapon[level].range, targetLayer);
+    
+        for(int i=0;i<hit.Length; i++)
+        {
+            if (hit[i].transform == attackTarget)//광선 중 하나가 오브젝트에 맞았으면 맞은 위치 검출
+            {
+                lineRenderer.SetPosition(0,spawnPoint.position);//선의 시작지점
+                lineRenderer.SetPosition(1, new Vector3(hit[i].point.x, hit[i].point.y, 0) + Vector3.back);//선의 끝지점
+                hitEffect.position = hit[i].point;//이펙트 위치
+                attackTarget.GetComponent<EnemyHP>().TakeDamage(towerTemplate.weapon[level].damage*Time.deltaTime);//적 체력 감소(1초당 damage)
+            }
+        }
     }
 
 }
