@@ -57,8 +57,18 @@ public class TowerDataViewer : MonoBehaviour
     }
     private void UpdateTowerData()
     {
+        if (currentTower.WeaponType == WeaponType.Cannon || currentTower.WeaponType == WeaponType.Laser)//타워가 데미지를 주는 타워면
+        {
+            imageTower.rectTransform.sizeDelta = new Vector2(88, 59);
+            textDamage.text = "Damage: " + currentTower.Damage;
+        }
+        else
+        {
+            imageTower.rectTransform.sizeDelta = new Vector2(59, 59);//크기를 스프라이트 크기에 맞게 변경
+            textDamage.text = "Slow: " + currentTower.Slow*100+"%";//감속률 출력
+        }
         imageTower.sprite = currentTower.TowerSprite;//이미지를 현재 타워의 이미지로 설정(레벨에 따라 갱신)
-        textDamage.text = "Damage: " + currentTower.Damage;
+        //textDamage.text = "Damage: " + currentTower.Damage;
         textRate.text = "Rate: "+currentTower.Rate;
         textRange.text = "Tange: " + currentTower.Range;
         textLevel.text = "Level: " + currentTower.Level;

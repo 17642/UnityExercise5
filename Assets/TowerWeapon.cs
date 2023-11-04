@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.XR;
 
 
-public enum WeaponType { Cannon=0, Laser}
+public enum WeaponType { Cannon=0, Laser, Slow}
 public enum WeaponState { SearchTarget = 0, TryAttackCannon, TryAttackLaser } //AttackToTarget }//공격 상태 대신
 
 public class TowerWeapon : MonoBehaviour {
@@ -55,13 +55,18 @@ public class TowerWeapon : MonoBehaviour {
     public float Rate => towerTemplate.weapon[level].rate;
     public float Range => towerTemplate.weapon[level].range;//각각 towerTemplate 배열의 요소로 설정
     public int MaxLevel => towerTemplate.weapon.Length;//레벨 최대치
+    public float Slow => towerTemplate.weapon[level].slow;//감속치
+    public WeaponType WeaponType => weaponType;//무기 타입
 
 
     public void Setup(EnemySpawner enemySpawner,PlayerGold playerGold,Tile ownerTile)
     {
         spriteRenderer=GetComponent<SpriteRenderer>();//컴포넌트 불러오기
         this.enemySpawner = enemySpawner;
-        ChangeState(WeaponState.SearchTarget);//최초 상태를 SearchTarget으로 지정
+        if (weaponType == WeaponType.Cannon || weaponType == WeaponType.Laser)//무기 타입이 캐논.레이저일 때(데미지를 주는 타워일 때)
+        {
+            ChangeState(WeaponState.SearchTarget);//최초 상태를 SearchTarget으로 지정
+        }
         this.playerGold = playerGold;//플레이어 골드 설정
         this.ownerTile = ownerTile;
         
@@ -164,6 +169,8 @@ public class TowerWeapon : MonoBehaviour {
                 break;
             }
             yield return new WaitForSeconds(towerTemplate.weapon[level].rate);//공격 속도만큼 대기
+
+            SpawnProjectile();//공격
         }
     }
     private IEnumerator TryAttackLaser() 
