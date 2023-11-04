@@ -23,6 +23,10 @@ public class TowerDataViewer : MonoBehaviour
     private Button buttonUpgrade;//업그레이드 버튼 활성화/비활성화 용도
     [SerializeField]
     private SystemTextViewer systemTextViewer;//시스템 텍스트 뷰어
+    [SerializeField]
+    private TextMeshProUGUI textUpgradeCost;
+    [SerializeField]
+    private TextMeshProUGUI textSellCost;
 
     private TowerWeapon currentTower;//현재 타워 정보
     void Awake()//기본적으로 패널 비활성화
@@ -60,18 +64,28 @@ public class TowerDataViewer : MonoBehaviour
         if (currentTower.WeaponType == WeaponType.Cannon || currentTower.WeaponType == WeaponType.Laser)//타워가 데미지를 주는 타워면
         {
             imageTower.rectTransform.sizeDelta = new Vector2(88, 59);
-            textDamage.text = "Damage: " + currentTower.Damage;
+            textDamage.text = "Damage: " + currentTower.Damage+"+"+"<color=red>"+currentTower.AddedDamage.ToString("F1")+"</color>";
+            //텍스트 뒤에 붉은색으로 추가 공격력 출력
         }
         else
         {
             imageTower.rectTransform.sizeDelta = new Vector2(59, 59);//크기를 스프라이트 크기에 맞게 변경
-            textDamage.text = "Slow: " + currentTower.Slow*100+"%";//감속률 출력
+            if (currentTower.WeaponType == WeaponType.Slow)//타워 속성이 Slow면
+            {
+                textDamage.text = "Slow: " + currentTower.Slow * 100 + "%";//감속률 출력
+            }else if (currentTower.WeaponType == WeaponType.Buff)//타워 속성이 Buff이면
+            {
+                textDamage.text = "Buff: " + currentTower.Buff * 100 + "%";//감속률 출력
+            }
         }
         imageTower.sprite = currentTower.TowerSprite;//이미지를 현재 타워의 이미지로 설정(레벨에 따라 갱신)
         //textDamage.text = "Damage: " + currentTower.Damage;
         textRate.text = "Rate: "+currentTower.Rate;
         textRange.text = "Tange: " + currentTower.Range;
         textLevel.text = "Level: " + currentTower.Level;
+
+        textUpgradeCost.text = currentTower.Upgragecost.ToString();
+        textSellCost.text = currentTower.SellCost.ToString();
 
         buttonUpgrade.interactable = currentTower.Level < currentTower.MaxLevel ? true : false;//레벨이 MaxLevel보다 클 경우 버튼 비활성화
     }

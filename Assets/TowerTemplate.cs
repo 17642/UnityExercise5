@@ -14,6 +14,7 @@ public class TowerTemplate : ScriptableObject//데이터 관리
         public Sprite sprite;//타워 스프라이트
         public float damage;//데미지
         public float slow;//감속 퍼센트 0.2=20%
+        public float buff;//공격력 증가율 0.2 =20%
         public float rate;//공격 속도
         public float range;//사거리
         public int cost;//비용 -> 0: 건설 1~: 업그레이드

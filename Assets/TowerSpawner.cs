@@ -64,7 +64,8 @@ public class TowerSpawner : MonoBehaviour
         playerGold.CurrentGold -= towerTemplate[towerType].weapon[0].cost;//타워 건설 비용만큼 골드 감소
         Vector3 position = tileTransform.position+Vector3.back;//타일보다 Z축-1의 위치(타일보다 타워 우선선택_)
         GameObject clone = Instantiate(towerTemplate[towerType].towerPrefab, position, Quaternion.identity);//선택한 타일 위치에 타워 생성
-        clone.GetComponent<TowerWeapon>().Setup(enemySpawner,playerGold,tile);//타워 무기에 enemy,골드,타일 정보 전달
+        clone.GetComponent<TowerWeapon>().Setup(this,enemySpawner,playerGold,tile);//타워 무기에 enemy,골드,타일 정보 전달
+        OnBuffAllBuffTowers();//버프 효과 갱신(새로 배치되는 타워를 위해)
         Destroy(followTowerClone);//타워 배치를 완료했으므로 임시 타워 삭제
         StopCoroutine("OnTowerCancelSystem");//타워 건설 취소 가능한 코루틴 끝
 
@@ -82,6 +83,21 @@ public class TowerSpawner : MonoBehaviour
             yield return null;
         }
         
+    }
+
+    public void OnBuffAllBuffTowers()
+    {
+        GameObject[] towers = GameObject.FindGameObjectsWithTag("Tower");//Tower 태그가 붙은 모든 오브젝트 탐색
+
+        for(int i=0;i<towers.Length; i++)
+        {
+            TowerWeapon weapon = towers[i].GetComponent<TowerWeapon>();
+
+            if(weapon.WeaponType==WeaponType.Buff) //타워 속성이 버프면
+            {
+                weapon.OnBuffAroundTower();//버프 수행
+            }
+        }
     }
 }
 
