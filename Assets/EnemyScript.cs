@@ -9,10 +9,12 @@ public class EnemyScript : MonoBehaviour
     private Transform[] wayPoints;  //이동 경로 정보
     private int currentIndex = 0;   //웨이포인트 인덱스
     private Movement2D movement2D;  //이동 제어
+    private EnemySpawner spawner;//적의 삭제를 EnemySpawner에게 부여
     // Start is called before the first frame update
-    public void Setup(Transform[] wayPoints)//웨이포인트 설정 함수
+    public void Setup(EnemySpawner spawner,Transform[] wayPoints)//웨이포인트 설정 함수
     {
         movement2D = GetComponent<Movement2D>();
+        this.spawner = spawner;
 
         wayPointCount=wayPoints.Length;//wayPoint 정보 설정
         this.wayPoints = new Transform[wayPointCount];//wayPoint 지정
@@ -54,13 +56,15 @@ public class EnemyScript : MonoBehaviour
         }
         else//마지막 waypoint에 도달했다면
         {
-            Destroy(gameObject);//오브젝트 삭제
+            //Destroy(gameObject);//오브젝트 삭제
+            OnDie();//오브젝트 사망
         }
     }
 
     // Update is called once per frame
-    void Update()
+    public void OnDie()//오브젝트가 사망할 때
     {
-        
+        //EnemySpawner가 처리를 하도록 함수 호출(List를 스포너에서 관리하므로)
+        spawner.DestroyEnemy(this);
     }
 }
