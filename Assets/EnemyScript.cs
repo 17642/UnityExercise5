@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public enum EnemyDestroyType { kill=0,Arrive}
 public class EnemyScript : MonoBehaviour
 {
     private int wayPointCount;      //이동 경로 수
@@ -11,6 +12,8 @@ public class EnemyScript : MonoBehaviour
     private Movement2D movement2D;  //이동 제어
     private EnemySpawner spawner;//적의 삭제를 EnemySpawner에게 부여
     // Start is called before the first frame update
+    [SerializeField]
+    private int gold = 10;
     public void Setup(EnemySpawner spawner,Transform[] wayPoints)//웨이포인트 설정 함수
     {
         movement2D = GetComponent<Movement2D>();
@@ -56,15 +59,16 @@ public class EnemyScript : MonoBehaviour
         }
         else//마지막 waypoint에 도달했다면
         {
+            gold = 0;//gold를 얻을 수 없게 설정
             //Destroy(gameObject);//오브젝트 삭제
-            OnDie();//오브젝트 사망
+            OnDie(EnemyDestroyType.Arrive);//오브젝트 사망
         }
     }
 
     // Update is called once per frame
-    public void OnDie()//오브젝트가 사망할 때
+    public void OnDie(EnemyDestroyType type)//오브젝트가 사망할 때
     {
         //EnemySpawner가 처리를 하도록 함수 호출(List를 스포너에서 관리하므로)
-        spawner.DestroyEnemy(this);
+        spawner.DestroyEnemy(type,this,gold);
     }
 }
