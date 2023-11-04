@@ -30,7 +30,8 @@ public class TowerSpawner : MonoBehaviour
         //타워가 없으면 IsbuildTower를 True로 설정
         tile.IsbuildTower = true;
         playerGold.CurrentGold -= towerBuildGold;//타워 건설 비용만큼 골드 감소
-        GameObject clone = Instantiate(towerPrefab, tileTransform.position, Quaternion.identity);//선택한 타일 위치에 타워 생성
+        Vector3 position = tileTransform.position+Vector3.back;//타일보다 Z축-1의 위치(타일보다 타워 우선선택_)
+        GameObject clone = Instantiate(towerPrefab, position, Quaternion.identity);//선택한 타일 위치에 타워 생성
         clone.GetComponent<TowerWeapon>().Setup(enemySpawner);//타워 무기에 enemy 정보 전달
 
     }
